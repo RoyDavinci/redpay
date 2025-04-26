@@ -143,7 +143,7 @@ export const Transactions = () => {
 
 			// Second API Call
 			const { data } = await axios.get(
-				`https://ubasms.approot.ng/php/ubaPhoneSearch.php?phone=${formattedValue}`
+				`https://messaging.approot.ng/newportal/number.php?phone=${formattedValue}`
 			);
 
 			console.log("Search Data (Before Update):", data);
@@ -367,22 +367,24 @@ export const Transactions = () => {
 			// console.log(initialRenderedData);
 			if (value === "mtn") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.network === "MTN"
+					(item) => item.network.toLowerCase() === "mtn"
 				);
 				setinitialData(filtered);
 			} else if (value === "airtel") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.network === "Airtel"
+					(item) => item.network.toLowerCase() === "airtel"
 				);
 				setinitialData(filtered);
 			} else if (value === "glo") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.network === "Globacom"
+					(item) =>
+						item.network.toLowerCase() === "Globacom" ||
+						item.network.toLowerCase() === "Glo"
 				);
 				setinitialData(filtered);
 			} else if (value === "9mobile") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.network === "9mobile"
+					(item) => item.network.toLowerCase() === "9mobile"
 				);
 				setinitialData(filtered);
 			}
@@ -399,27 +401,27 @@ export const Transactions = () => {
 			// console.log(initialFilteredRenderedData);
 			if (value === "delivered") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.dlr_status === "DELIVRD"
+					(item) => item.dlr_request === "DELIVRD"
 				);
 				setinitialData(filtered);
 			} else if (value === "undelivered") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.dlr_status === "UNDELIV"
+					(item) => item.dlr_request === "UNDELIV"
 				);
 				setinitialData(filtered);
 			} else if (value === "expired") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.dlr_status === "EXPIRED"
+					(item) => item.dlr_request === "EXPIRED"
 				);
 				setinitialData(filtered);
 			} else if (value === "rejected") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.dlr_status === "REJECTD"
+					(item) => item.dlr_request === "REJECTD"
 				);
 				setinitialData(filtered);
 			} else if (value === "pending") {
 				const filtered = initialFilteredRenderedData.filter(
-					(item) => item.dlr_status === null
+					(item) => item.dlr_request === null
 				);
 				console.log(filtered);
 				setinitialData(filtered);
