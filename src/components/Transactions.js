@@ -80,13 +80,16 @@ export const Transactions = () => {
 	}
 
 	const getErrorCodeDescription = (report) => {
+		if (report === "0") {
+			return "Awaiting DLR";
+		}
 		try {
 			// If the report is a string and matches an error code directly
 			if (
 				typeof report === "string" &&
 				errorCodeDescriptions[report] !== undefined
 			) {
-				return `${report}: ${errorCodeDescriptions[report]}`;
+				return `${report}: ${errorCodeDescriptions[report]}`; // Corrected string interpolation
 			}
 			// If the report is a JSON object, try to parse and extract the error code
 			else if (isObject(report)) {
@@ -98,7 +101,7 @@ export const Transactions = () => {
 				if (errorCodeMatch) {
 					const errorCode = errorCodeMatch[1];
 					const description = errorCodeDescriptions[errorCode];
-					return description ? `${errorCode}: ${description}` : errorCode;
+					return description ? `${errorCode}: ${description}` : errorCode; // Corrected string interpolation
 				}
 			}
 
@@ -308,35 +311,35 @@ export const Transactions = () => {
 			// valueGetter: (params) => params.row.created_at
 		},
 		{
-			field: "dlr_status",
+			field: "dlr_request",
 			headerName: "Status",
 			width: 200,
 			headerAlign: "left",
 			align: "left",
 			renderCell: (params) => {
-				if (params.row.dlr_status === "") {
+				if (params.row.dlr_request === "") {
 					return (
 						<p className='p-[0.5px] bg-yellow-300 text-yellow-400'>Pending</p>
 					);
-				} else if (params.row.dlr_status === "DELIVRD") {
+				} else if (params.row.dlr_request === "DELIVRD") {
 					return (
 						<p className='p-[1.5px] rounded-sm bg-green-500 text-white'>
 							Delivered
 						</p>
 					);
-				} else if (params.row.dlr_status === "EXPIRED") {
+				} else if (params.row.dlr_request === "EXPIRED") {
 					return (
 						<p className='p-[1.5px] bg-gray-300 rounded-sm text-black'>
 							Expired
 						</p>
 					);
-				} else if (params.row.dlr_status === "UNDELIV") {
+				} else if (params.row.dlr_request === "UNDELIV") {
 					return (
 						<p className='p-[1.5px] bg-gray-300 rounded-sm text-red-500'>
 							Undelivered
 						</p>
 					);
-				} else if (params.row.dlr_status === "REJECTD") {
+				} else if (params.row.dlr_request === "REJECTD") {
 					return (
 						<p className='p-[1.5px] bg-red-500 rounded-sm text-white'>
 							Rejected
@@ -350,13 +353,12 @@ export const Transactions = () => {
 			},
 		},
 		{
-			field: "dlr_request",
+			field: "dlr_status",
 			headerName: "Error Code",
 			width: 200,
 			headerAlign: "left",
 			align: "left",
-			valueGetter: (params) =>
-				getErrorCodeDescription(params?.row?.dlr_request),
+			valueGetter: (params) => getErrorCodeDescription(params),
 		},
 	];
 	const filterTelco = (value) => {
@@ -431,7 +433,7 @@ export const Transactions = () => {
 		setLoading(true);
 		try {
 			const { data } = await axios.get(
-				`https://ubasms.approot.ng/php/ubatransactions.php?rowsPerPage=${rowsPerPage}`
+				"https://messaging.approot.ng/newportal/messages.php"
 			);
 
 			console.log(data);
@@ -479,7 +481,7 @@ export const Transactions = () => {
 	}, []);
 
 	return (
-		<div>
+		<div className='p-6'>
 			{loading ? (
 				<div className='flex justify-center items-center h-screen'>
 					<FadeLoader
@@ -492,23 +494,26 @@ export const Transactions = () => {
 				</div>
 			) : (
 				<div>
-					<div className='border-b-[0.5px] px-2 my-4 border-gray-400 border-solid'>
-						<p>Messages</p>
+					{/* Messages Section */}
+					<div className='border-b-[0.5px] px-4 my-6 border-gray-400 border-solid'>
+						<p className='text-xl font-semibold text-gray-800'>Messages</p>
 					</div>
-					<div className='border-b-[0.5px] justify-between items-center flex px-2 border-gray-400 border-solid h-8'>
-						<p className='border-b-[0.5px] pb-6 font-bold text-red-500 border-red-500 border-solid'>
+					<div className='border-b-[0.5px] flex justify-between items-center px-4 py-2 border-gray-400 border-solid'>
+						<p className='font-bold text-red-500 border-b-2 border-red-500'>
 							Logs
 						</p>
 					</div>
-					<div className='my-4'>
-						<div className='lg:flex hidden  border-b border-solid border-gray-300 justify-normal h-8'>
+
+					{/* Paragraph Section */}
+					<div className='my-6'>
+						<div className='lg:flex hidden border-b border-solid border-gray-300 justify-normal h-8'>
 							{paragraphs.map((paragraph, index) => (
 								<p
 									key={index}
-									className={`cursor-pointer pb-[30.2px] mx-2 ${
+									className={`cursor-pointer pb-2 mx-3 text-lg font-medium transition-colors duration-300 ${
 										index === activeIndex
-											? "border-green-500 border-b-4 border-solid rounded-sm"
-											: ""
+											? "border-b-4 border-green-500 text-green-500"
+											: "hover:text-green-500"
 									}`}
 									onClick={() => {
 										handleParagraphClick(index);
@@ -520,48 +525,51 @@ export const Transactions = () => {
 							))}
 						</div>
 					</div>
+
+					{/* Download Button */}
 					{downloadButton && (
-						<div className='flex justify-end'>
+						<div className='flex justify-end mb-6'>
 							<CSVLink
 								data={transformDataForCSV(initialData)}
-								// filename={"custom-report.csv"}
 								filename={`SMS_${new Date().toLocaleDateString()}.csv`}
-								className='flex items-center px-3 py-2 bg-[#f24b32] text-[#fff] rounded-md hover:bg-[#9ED686] transition duration-300'
+								className='flex items-center px-4 py-2 bg-[#f24b32] text-white rounded-md hover:bg-[#9ED686] transition duration-300'
 							>
 								<FaDownload className='mr-2' /> Export
 							</CSVLink>
 						</div>
 					)}
+
+					{/* Forms Section */}
 					<div className='lg:flex block justify-center flex-col items-center overflow-auto'>
-						<div className='lg:flex lg:justify-between block items-center my-2 w-full p-4'>
-							{/* Form 1 */}
+						<div className='lg:flex lg:justify-between block items-center my-6 w-full p-4 bg-gray-50 rounded-lg shadow-lg'>
+							{/* Filter by Phone Number */}
 							<form
-								className='flex lg:my-0 my-4 items-center justify-center text-center  space-x-2'
+								className='flex lg:my-0 my-4 items-center justify-center space-x-4'
 								onSubmit={filterTable}
 							>
 								<input
 									type='search'
 									placeholder='Search Phone Number'
-									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-1 rounded-sm'
+									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-2 rounded-md shadow-sm w-full max-w-xs'
 									value={filterValue}
 									required
 									onChange={(e) => setFilterValue(e.target.value)}
 								/>
-								<button className='border-[0.8px] border-solid  focus:outline-none border-gray-500 p-1 rounded-sm text-sm text-black  hover:bg-gray-400 hover:text-white'>
+								<button className='px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition duration-300'>
 									Filter
 								</button>
 							</form>
 
+							{/* Filter by Date and Time */}
 							<form
 								action=''
-								className='flex lg:my-0 my-4 items-center justify-center text-center  space-x-2'
+								className='flex lg:my-0 my-4 items-center justify-center space-x-4'
 								onSubmit={handleTimestamp}
 							>
 								<input
 									aria-label='Date and time'
 									type='datetime-local'
-									placeholder='From'
-									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-1 rounded-sm mx-1'
+									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-2 rounded-md shadow-sm'
 									value={timeStamp.from}
 									onChange={(e) =>
 										setTimeStamp({ ...timeStamp, from: e.target.value })
@@ -570,24 +578,23 @@ export const Transactions = () => {
 								<input
 									aria-label='Date and time'
 									type='datetime-local'
-									placeholder='To'
-									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-1 rounded-sm mx-1'
+									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-2 rounded-md shadow-sm'
 									value={timeStamp.to}
 									onChange={(e) =>
 										setTimeStamp({ ...timeStamp, to: e.target.value })
 									}
 								/>
-								<button className='border-[0.8px] border-solid  focus:outline-none border-gray-500 p-1 rounded-sm text-sm text-black  hover:bg-gray-400 hover:text-white'>
+								<button className='px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition duration-300'>
 									Filter
 								</button>
 							</form>
 
-							{/* Form 2 */}
-							<form className='flex justify-center items-center space-x-2'>
+							{/* Filter by Status */}
+							<form className='flex justify-center items-center space-x-4'>
 								<select
 									name=''
 									id=''
-									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-1 rounded-sm'
+									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-2 rounded-md shadow-sm'
 									value={status}
 									onChange={(e) => {
 										setStatus(e.target.value);
@@ -602,11 +609,13 @@ export const Transactions = () => {
 									<option value='rejected'>REJECTED</option>
 								</select>
 							</form>
-							<form className='flex justify-center lg:my-0 my-4 items-center space-x-2'>
+
+							{/* Filter by Network */}
+							<form className='flex justify-center items-center lg:my-0 my-4 space-x-4'>
 								<select
 									name=''
 									id=''
-									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-1 rounded-sm'
+									className='border-[0.8px] border-solid text-sm focus:outline-none border-gray-500 p-2 rounded-md shadow-sm'
 									value={telco}
 									onChange={(e) => {
 										setTelco(e.target.value);
@@ -621,8 +630,10 @@ export const Transactions = () => {
 								</select>
 							</form>
 						</div>
-						{renderedData === "Transactional" && (
-							<div className=' w-full  p-2'>
+
+						{/* Data Grid Section */}
+						<div className='w-full p-2'>
+							{renderedData === "Transactional" && (
 								<DataGrid
 									rows={initialData}
 									rowHeight={80}
@@ -635,18 +646,16 @@ export const Transactions = () => {
 									sx={{
 										boxShadow: 2,
 										border: 0.5,
-
 										padding: 0.5,
 									}}
 									pageSizeOptions={[10, 20]}
 									checkboxSelection
 									getRowId={(row) => row?.id}
 								/>
-							</div>
-						)}
-						{renderedData === "OTP" &&
-							(initialRenderedData.length < 1 ? (
-								<>
+							)}
+
+							{renderedData === "OTP" &&
+								(initialRenderedData.length < 1 ? (
 									<div className='flex justify-center items-center flex-col h-screen'>
 										<FadeLoader
 											loading={initialRenderedData.length < 1 ? true : false}
@@ -656,9 +665,7 @@ export const Transactions = () => {
 											data-testid='loader'
 										/>
 									</div>
-								</>
-							) : (
-								<div className=' w-full  p-2'>
+								) : (
 									<DataGrid
 										rows={initialRenderedData}
 										rowHeight={80}
@@ -671,15 +678,14 @@ export const Transactions = () => {
 										sx={{
 											boxShadow: 2,
 											border: 0.5,
-
 											padding: 0.5,
 										}}
 										pageSizeOptions={[10, 20]}
 										checkboxSelection
 										getRowId={(row) => row?.id}
 									/>
-								</div>
-							))}
+								))}
+						</div>
 					</div>
 				</div>
 			)}
