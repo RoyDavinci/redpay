@@ -275,7 +275,8 @@ export const Transactions = () => {
 			type: "number",
 			width: 120,
 			valueGetter: (params) => {
-				const network = params?.row?.network?.toLowerCase();
+				const network = params?.toLowerCase();
+				console.log(network, params);
 
 				const knownNetworks = ["glo", "9mobile", "airtel"];
 
@@ -285,7 +286,7 @@ export const Transactions = () => {
 				) {
 					return getNetwork(params?.row?.msisdn);
 				} else {
-					return params.row.network;
+					return params;
 				}
 			},
 			headerAlign: "left",
