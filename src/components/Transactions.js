@@ -4,14 +4,12 @@ import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import FadeLoader from "react-spinners/FadeLoader";
 import { getNetwork } from "../utils/number";
-import { FaEye, FaSearch, FaDownload, FaPlus } from "react-icons/fa";
+import { FaDownload } from "react-icons/fa";
 import { CSVLink } from "react-csv";
 
 export const Transactions = () => {
 	// const [data, setData] = useState([]); // Data state
 	const [page, setPage] = useState(1); // Current page
-	const rowsPerPage = 1000; // Number of rows per page
-	const [dataItems, setDataItems] = useState([]);
 	const [initialData, setinitialData] = useState([]);
 	const [initialRenderedData, setinitialRenderedData] = useState([]);
 	const [initialFilteredRenderedData, setinitialFilteredRenderedData] =
@@ -22,7 +20,6 @@ export const Transactions = () => {
 
 	const [loading, setLoading] = useState(false);
 	const [filterValue, setFilterValue] = useState("");
-	const [phone, setPhone] = useState({ phone: "", from: "", to: "" });
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [renderedData, setRenderedData] = useState("Transactional");
 	const [status, setStatus] = useState("");
@@ -209,18 +206,6 @@ export const Transactions = () => {
 		}));
 	};
 
-	function formatTimestamp(date) {
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
-		const day = String(date.getDate()).padStart(2, "0");
-		const hours = String(date.getHours()).padStart(2, "0");
-		const minutes = String(date.getMinutes()).padStart(2, "0");
-		const seconds = String(date.getSeconds()).padStart(2, "0");
-
-		// return `${year}-${month}-${day}:${hours}:${minutes}`;
-		return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-	}
-
 	const handleTimestamp = (e) => {
 		e.preventDefault();
 
@@ -322,25 +307,34 @@ export const Transactions = () => {
 					return (
 						<p className='p-[0.5px] bg-yellow-300 text-yellow-400'>Pending</p>
 					);
-				} else if (params.row.dlr_request === "DELIVRD") {
+				} else if (params.row?.dlr_request === "DELIVRD") {
 					return (
 						<p className='p-[1.5px] rounded-sm bg-green-500 text-white'>
 							Delivered
 						</p>
 					);
-				} else if (params.row.dlr_request === "EXPIRED") {
+				} else if (
+					params.row.dlr_request === "EXPIRED" ||
+					params.row?.dlr_request?.includes("EXP")
+				) {
 					return (
 						<p className='p-[1.5px] bg-gray-300 rounded-sm text-black'>
 							Expired
 						</p>
 					);
-				} else if (params.row.dlr_request === "UNDELIV") {
+				} else if (
+					params.row.dlr_request === "UNDELIV" ||
+					params.row?.dlr_request?.includes("UND")
+				) {
 					return (
 						<p className='p-[1.5px] bg-gray-300 rounded-sm text-red-500'>
 							Undelivered
 						</p>
 					);
-				} else if (params.row.dlr_request === "REJECTD") {
+				} else if (
+					params.row.dlr_request === "REJECTD" ||
+					params.row?.dlr_request?.includes("REJ")
+				) {
 					return (
 						<p className='p-[1.5px] bg-red-500 rounded-sm text-white'>
 							Rejected
