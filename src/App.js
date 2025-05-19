@@ -53,22 +53,27 @@ function App() {
 	}, [closeSidemenu]);
 
 	const getItems = async () => {
-		const checkLocalstorage = localStorage.getItem("token");
-		console.log(checkLocalstorage);
-		if (!checkLocalstorage) {
+		const token = localStorage.getItem("token");
+		const username = localStorage.getItem("username");
+
+		if (!token || !username) {
 			setLoginState(true);
 			return;
 		}
+
 		setIsLoading(true);
 		try {
 			const { data } = await axios.get(
-				"https://messaging.approot.ng/newportal/portal.php"
+				"https://messaging.approot.ng/newportal/portal.php",
+				{
+					params: { username },
+				}
 			);
 			setItems(data);
-			setIsLoading(false);
 		} catch (error) {
-			setIsLoading(false);
 			console.error(error);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 

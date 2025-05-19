@@ -139,8 +139,9 @@ export const Transactions = () => {
 			const isValidNetwork = validNetworks.includes(portingData);
 
 			// Second API Call
+			const username = localStorage.getItem("username");
 			const { data } = await axios.get(
-				`https://messaging.approot.ng/newportal/number.php?phone=${formattedValue}`
+				`https://messaging.approot.ng/newportal/number.php?phone=${formattedValue}&username=${username}`
 			);
 
 			console.log("Search Data (Before Update):", data);
@@ -425,34 +426,27 @@ export const Transactions = () => {
 			setinitialData(initialFilteredRenderedData);
 		}
 	};
-
 	const getItems = async () => {
 		setLoading(true);
 		try {
+			const username = localStorage.getItem("username");
 			const { data } = await axios.get(
-				"https://messaging.approot.ng/newportal/messages.php"
+				`https://messaging.approot.ng/newportal/messages.php?username=${username}`
 			);
 
 			console.log(data);
 
-			setinitialData(
-				data.sort((a, b) => {
-					const dateA = new Date(a.created_at);
-					const dateB = new Date(b.created_at);
-					return dateB - dateA;
-				})
+			const sorted = data.sort(
+				(a, b) => new Date(b.created_at) - new Date(a.created_at)
 			);
-			setinitialFilteredRenderedData(
-				data.sort((a, b) => {
-					const dateA = new Date(a.created_at);
-					const dateB = new Date(b.created_at);
-					return dateB - dateA;
-				})
-			);
-			setLoading(false);
+
+			setinitialData(sorted);
+			setinitialFilteredRenderedData(sorted);
 			setPage(page + 1);
+			setLoading(false);
 		} catch (error) {
 			setLoading(false);
+			console.error(error);
 		}
 	};
 

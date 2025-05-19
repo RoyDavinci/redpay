@@ -30,6 +30,7 @@ export const Login = ({ loginState, setLoginState }) => {
 				console.log(data);
 				const token = sessionStorage.getItem("token");
 				localStorage.setItem("token", token);
+				localStorage.setItem("username", formData.username);
 				setError("");
 				setLoginState(false);
 
