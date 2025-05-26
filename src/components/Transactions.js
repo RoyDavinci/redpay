@@ -8,8 +8,7 @@ import { FaDownload } from "react-icons/fa";
 import { CSVLink } from "react-csv";
 
 export const Transactions = () => {
-	// const [data, setData] = useState([]); // Data state
-	const [page, setPage] = useState(1); // Current page
+	const [page, setPage] = useState(1);
 	const [initialData, setinitialData] = useState([]);
 	const [initialRenderedData, setinitialRenderedData] = useState([]);
 	const [initialFilteredRenderedData, setinitialFilteredRenderedData] =
@@ -81,35 +80,29 @@ export const Transactions = () => {
 			return "Awaiting DLR";
 		}
 		try {
-			// If the report is a string and matches an error code directly
 			if (
 				typeof report === "string" &&
 				errorCodeDescriptions[report] !== undefined
 			) {
-				return `${report}: ${errorCodeDescriptions[report]}`; // Corrected string interpolation
-			}
-			// If the report is a JSON object, try to parse and extract the error code
-			else if (isObject(report)) {
+				return `${report}: ${errorCodeDescriptions[report]}`;
+			} else if (isObject(report)) {
 				const parsedReport = JSON.parse(report);
 				const message = parsedReport.message || "";
 
-				// Extract error code using regex
 				const errorCodeMatch = message.match(/err:([0-9a-zA-Z]+)/);
 				if (errorCodeMatch) {
 					const errorCode = errorCodeMatch[1];
 					const description = errorCodeDescriptions[errorCode];
-					return description ? `${errorCode}: ${description}` : errorCode; // Corrected string interpolation
+					return description ? `${errorCode}: ${description}` : errorCode;
 				}
 			}
 
-			return "Awaiting DLR"; // Default fallback if no conditions match
+			return "Awaiting DLR";
 		} catch (e) {
 			console.error("Error in getErrorCodeDescription:", e);
 			return "Awaiting DLR";
 		}
 	};
-
-	// const [nonTransactional, setNonTransactional] = useState([]);
 
 	const filterTable = async () => {
 		setLoading(true);
@@ -117,44 +110,32 @@ export const Transactions = () => {
 			let formattedValue;
 
 			if (filterValue.length === 11) {
-				// If the value is 11 digits long, remove the first character and add "234" at the beginning
 				formattedValue = "234" + filterValue.slice(1);
 			} else if (filterValue.length === 13) {
-				// If the value is 13 characters long, use the value as is
 				formattedValue = filterValue;
 			} else {
-				// Handle cases where the value is not 11 or 13 characters long
-				formattedValue = filterValue; // or any other default behavior
+				formattedValue = filterValue;
 			}
 
-			// First API Call
 			const { data: portingData } = await axios.get(
 				`https://ubasms.approot.ng/php/searchPorting.php?phone=${formattedValue}`
 			);
 
 			console.log("Porting Data:", portingData);
 
-			// Validate portingData
 			const validNetworks = ["MTN", "Airtel", "Glo", "9mobile"];
 			const isValidNetwork = validNetworks.includes(portingData);
 
-			// Second API Call
 			const username = localStorage.getItem("username");
 			const { data } = await axios.get(
 				`https://messaging.approot.ng/newportal/number.php?phone=${formattedValue}&username=${username}`
 			);
 
-			console.log("Search Data (Before Update):", data);
-
-			// Replace network field in all objects if portingData is valid
 			const updatedData = data.map((item) => ({
 				...item,
 				network: isValidNetwork ? portingData : item.network,
 			}));
 
-			console.log("Search Data (After Update):", updatedData);
-
-			// Sort and update state with the results
 			const sortedData = updatedData.sort((a, b) => {
 				const dateA = new Date(a.created_at);
 				const dateB = new Date(b.created_at);
@@ -188,20 +169,18 @@ export const Transactions = () => {
 			case null:
 				return "Sent";
 			default:
-				return "Delivered"; // Default case if no match
+				return "Delivered";
 		}
 	};
 
 	const transformDataForCSV = (data) => {
-		console.log(data);
-
 		return data.map((row) => ({
 			msisdn: "'" + row.msisdn,
-			network: getNetwork(row.msisdn), // Process the network
-			senderid: row.senderid, // Default to "UBA" if not present
+			network: getNetwork(row.msisdn),
+			senderid: row.senderid,
 			created_at: row.created_at,
-			status: getDlrStatusDescription(row.dlr_status), // Get the status description
-			error_code: getErrorCodeDescription(row.dlr_request), // Safely get error code description
+			status: getDlrStatusDescription(row.dlr_status),
+			error_code: getErrorCodeDescription(row.dlr_request),
 			externalMessageId: window.crypto.randomUUID(),
 			requestType: "SMS",
 		}));
@@ -210,24 +189,20 @@ export const Transactions = () => {
 	const handleTimestamp = (e) => {
 		e.preventDefault();
 
-		// Convert the form values to Date objects
 		const fromDate = new Date(timeStamp.from);
 		const toDate = new Date(timeStamp.to);
 
-		// Filter the data based on the created_at field
 		const filtered = initialFilteredRenderedData.filter((item) => {
 			const itemDate = new Date(item.created_at);
 			return itemDate >= fromDate && itemDate <= toDate;
 		});
 
-		// Sort the filtered data by date, descending
 		const sortedFiltered = filtered.sort((a, b) => {
 			const dateA = new Date(a.created_at);
 			const dateB = new Date(b.created_at);
 			return dateB - dateA;
 		});
 
-		// Update the state with the filtered and sorted data
 		setinitialData(sortedFiltered);
 	};
 
@@ -262,8 +237,6 @@ export const Transactions = () => {
 			width: 120,
 			valueGetter: (params) => {
 				const network = params?.toLowerCase();
-				console.log(network, params);
-
 				const knownNetworks = ["glo", "9mobile", "airtel"];
 
 				if (
@@ -294,7 +267,6 @@ export const Transactions = () => {
 			width: 200,
 			headerAlign: "left",
 			align: "left",
-			// valueGetter: (params) => params.row.created_at
 		},
 		{
 			field: "dlr_request",
@@ -358,8 +330,6 @@ export const Transactions = () => {
 	];
 	const filterTelco = (value) => {
 		if (value.length > 1) {
-			console.log(value);
-			// console.log(initialRenderedData);
 			if (value === "mtn") {
 				const filtered = initialFilteredRenderedData.filter(
 					(item) => item.network.toLowerCase() === "mtn"
@@ -384,16 +354,12 @@ export const Transactions = () => {
 				setinitialData(filtered);
 			}
 		} else {
-			// setinitialFilteredRenderedData([]);
 			setinitialData(initialFilteredRenderedData);
 		}
 	};
 
 	const filterStatus = (value) => {
 		if (value.length > 1) {
-			// setinitialFilteredRenderedData(initialRenderedData);
-			console.log(value);
-			// console.log(initialFilteredRenderedData);
 			if (value === "delivered") {
 				const filtered = initialFilteredRenderedData.filter(
 					(item) => item.dlr_request === "DELIVRD"
@@ -418,7 +384,6 @@ export const Transactions = () => {
 				const filtered = initialFilteredRenderedData.filter(
 					(item) => item.dlr_request === null
 				);
-				console.log(filtered);
 				setinitialData(filtered);
 			}
 		} else {
@@ -432,8 +397,6 @@ export const Transactions = () => {
 			const { data } = await axios.get(
 				`https://messaging.approot.ng/newportal/messages.php?username=${username}`
 			);
-
-			console.log(data);
 
 			const sorted = data.sort(
 				(a, b) => new Date(b.created_at) - new Date(a.created_at)
@@ -457,13 +420,10 @@ export const Transactions = () => {
 
 	const handleParagraphClick = (index) => {
 		setActiveIndex(index);
-
-		// setRenderedData(paragraphs[activeIndex]);
 	};
 
 	useEffect(() => {
 		getItems();
-		// getOtpItems();
 
 		return () => {
 			console.log("cleared data");
@@ -484,7 +444,6 @@ export const Transactions = () => {
 				</div>
 			) : (
 				<div>
-					{/* Messages Section */}
 					<div className='border-b-[0.5px] px-4 my-6 border-gray-400 border-solid'>
 						<p className='text-xl font-semibold text-gray-800'>Messages</p>
 					</div>
@@ -494,7 +453,6 @@ export const Transactions = () => {
 						</p>
 					</div>
 
-					{/* Paragraph Section */}
 					<div className='my-6'>
 						<div className='lg:flex hidden border-b border-solid border-gray-300 justify-normal h-8'>
 							{paragraphs.map((paragraph, index) => (
@@ -515,8 +473,6 @@ export const Transactions = () => {
 							))}
 						</div>
 					</div>
-
-					{/* Download Button */}
 					{downloadButton && (
 						<div className='flex justify-end mb-6'>
 							<CSVLink
@@ -529,10 +485,8 @@ export const Transactions = () => {
 						</div>
 					)}
 
-					{/* Forms Section */}
 					<div className='lg:flex block justify-center flex-col items-center overflow-auto'>
 						<div className='lg:flex lg:justify-between block items-center my-6 w-full p-4 bg-gray-50 rounded-lg shadow-lg'>
-							{/* Filter by Phone Number */}
 							<form
 								className='flex lg:my-0 my-4 items-center justify-center space-x-4'
 								onSubmit={filterTable}
@@ -549,8 +503,6 @@ export const Transactions = () => {
 									Filter
 								</button>
 							</form>
-
-							{/* Filter by Date and Time */}
 							<form
 								action=''
 								className='flex lg:my-0 my-4 items-center justify-center space-x-4'
@@ -578,8 +530,6 @@ export const Transactions = () => {
 									Filter
 								</button>
 							</form>
-
-							{/* Filter by Status */}
 							<form className='flex justify-center items-center space-x-4'>
 								<select
 									name=''
@@ -599,8 +549,6 @@ export const Transactions = () => {
 									<option value='rejected'>REJECTED</option>
 								</select>
 							</form>
-
-							{/* Filter by Network */}
 							<form className='flex justify-center items-center lg:my-0 my-4 space-x-4'>
 								<select
 									name=''
@@ -620,8 +568,6 @@ export const Transactions = () => {
 								</select>
 							</form>
 						</div>
-
-						{/* Data Grid Section */}
 						<div className='w-full p-2'>
 							{renderedData === "Transactional" && (
 								<DataGrid
@@ -643,7 +589,6 @@ export const Transactions = () => {
 									getRowId={(row) => row?.id}
 								/>
 							)}
-
 							{renderedData === "OTP" &&
 								(initialRenderedData.length < 1 ? (
 									<div className='flex justify-center items-center flex-col h-screen'>
