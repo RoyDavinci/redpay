@@ -198,7 +198,7 @@ export const Transactions = () => {
 		return data.map((row) => ({
 			msisdn: "'" + row.msisdn,
 			network: getNetwork(row.msisdn), // Process the network
-			senderid: row.senderid || "UBA", // Default to "UBA" if not present
+			senderid: row.senderid, // Default to "UBA" if not present
 			created_at: row.created_at,
 			status: getDlrStatusDescription(row.dlr_status), // Get the status description
 			error_code: getErrorCodeDescription(row.dlr_request), // Safely get error code description
@@ -284,10 +284,9 @@ export const Transactions = () => {
 			width: 100,
 			headerAlign: "left",
 			align: "left",
-			valueGetter: (params) =>
-				params?.row && params?.row?.senderid
-					? params?.row?.senderid
-					: "Citizens",
+			valueGetter: (params) => {
+				return params || "";
+			},
 		},
 		{
 			field: "created_at",
