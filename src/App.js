@@ -64,7 +64,7 @@ function App() {
 		setIsLoading(true);
 		try {
 			const { data } = await axios.get(
-				"https://messaging.approot.ng/newportal/portal.php",
+				"http://localhost:8000/portal.php",
 				{
 					params: { username },
 				}
