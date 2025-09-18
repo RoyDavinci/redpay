@@ -19,7 +19,7 @@ export const Login = ({ loginState, setLoginState }) => {
 		try {
 			console.log(otpValue);
 			const { data } = await axios.post(
-				"http://messaging.approot.ng/newportal/otp.php",
+				"https://messaging.approot.ng/newportal/otp.php",
 				{
 					otp: otpValue,
 					username: formData.username,
